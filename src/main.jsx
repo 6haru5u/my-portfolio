@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles.css'
 import profilePortrait from './assets/profile-portrait.jpg'
@@ -21,7 +21,7 @@ const profile = {
 const photos = {
   portrait: profilePortrait,
   desk: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=85',
-  studio: codeIntroPhoto,
+  codeIntro: codeIntroPhoto,
   laptop: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=85',
   city: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&q=85',
 }
@@ -47,7 +47,7 @@ const projects = [
     extra: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=500&q=80',
     tech: ['React', 'Tailwind CSS', 'Charts', 'REST API'],
     people: 'Solo project',
-    github: 'https://github.com',
+    github: 'https://github.com/6haru5u',
     demo: 'https://example.com',
   },
   {
@@ -58,7 +58,7 @@ const projects = [
     extra: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=500&q=80',
     tech: ['React', 'CMS', 'Animation', 'Figma'],
     people: 'Alex Kim, Sam Ray',
-    github: 'https://github.com',
+    github: 'https://github.com/6haru5u',
     demo: 'https://example.com',
   },
   {
@@ -69,28 +69,15 @@ const projects = [
     extra: 'https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&w=500&q=80',
     tech: ['React', 'OpenWeather API', 'CSS', 'Vite'],
     people: 'Solo project',
-    github: 'https://github.com',
+    github: 'https://github.com/6haru5u',
     demo: 'https://example.com',
   },
 ]
 
-function IconButton({ children, label, href = '#contact' }) {
-  return (
-    <a
-      href={href}
-      aria-label={label}
-      title={label}
-      className="grid h-9 w-9 place-items-center rounded-full border border-black bg-white text-xs font-black transition hover:bg-black hover:text-white"
-    >
-      {children}
-    </a>
-  )
-}
-
 function ChevronCircle({ open }) {
   return (
-    <span className={`grid h-8 w-8 place-items-center rounded-full border border-black text-sm transition ${open ? 'rotate-180 bg-black text-white' : 'bg-white'}`}>
-      v
+    <span className={`grid h-8 w-8 place-items-center rounded-full border border-black text-xs font-bold transition ${open ? 'rotate-180 bg-black text-white' : 'bg-white text-black'}`}>
+      ▼
     </span>
   )
 }
@@ -101,72 +88,198 @@ function CollapsibleBlock({ title, children, defaultOpen = true }) {
   return (
     <section className="border-t border-black pt-4">
       <button className="flex w-full items-center justify-between gap-4 text-left" onClick={() => setOpen(!open)}>
-        <h3 className="text-xl font-black uppercase leading-none sm:text-2xl">{title}</h3>
+        <h3 className="text-lg sm:text-xl font-black uppercase leading-none">{title}</h3>
         <ChevronCircle open={open} />
       </button>
-      {open && <div className="pt-4">{children}</div>}
+      {open && <div className="pt-3">{children}</div>}
     </section>
   )
 }
 
-function FrameFooter({ number, isDark = false }) {
+function SectionHeader({ tag, title, number, isDark = false }) {
   return (
-    <div className={`flex items-end justify-between border-t pt-3 text-[10px] sm:text-xs md:text-sm font-bold uppercase leading-tight ${isDark ? 'border-neutral-800 text-white' : 'border-black text-black'}`}>
-      <span>
-        {profile.name}<br />
-        <span className={isDark ? 'text-neutral-400 font-semibold' : 'text-neutral-600 font-semibold'}>{profile.role}</span>
-      </span>
-      <span className="font-black tracking-widest text-xs sm:text-sm">{number}</span>
+    <div className={`flex flex-col sm:flex-row sm:items-end justify-between border-b pb-4 mb-8 sm:mb-12 ${isDark ? 'border-neutral-800 text-white' : 'border-black text-black'}`}>
+      <div>
+        <span className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{tag}</span>
+        <h2 className="font-display text-4xl sm:text-5xl md:text-6xl font-black uppercase leading-none mt-1">{title}</h2>
+      </div>
+      <span className="font-black text-3xl sm:text-4xl md:text-5xl tracking-tight mt-2 sm:mt-0">{number}</span>
     </div>
   )
 }
 
 function Photo({ src, alt, className = '' }) {
   return (
-    <div className={`grain relative overflow-hidden bg-neutral-300 ${className}`}>
-      <img className="h-full w-full object-cover grayscale contrast-125" src={src} alt={alt} />
+    <div className={`grain relative overflow-hidden bg-neutral-200 ${className}`}>
+      <img className="h-full w-full object-cover grayscale contrast-125 transition duration-500 hover:scale-105" src={src} alt={alt} />
     </div>
   )
 }
 
-/* Page 1 (0001) - Cover 1920x1080 */
-function CoverSlide({ onNext }) {
+/* 1. TOP NAVBAR */
+function Navbar({ active, setActive }) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const navItems = [
+    { id: 'cover', label: 'Cover' },
+    { id: 'introduction', label: 'Intro' },
+    { id: 'about', label: 'About Me' },
+    { id: 'resume', label: 'Resume' },
+    { id: 'work', label: 'Work' },
+    { id: 'contact', label: 'Contact' },
+  ]
+
+  const handleScroll = (id) => {
+    setActive(id)
+    setMenuOpen(false)
+    const element = document.getElementById(id)
+    if (element) {
+      const navHeight = 70
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset
+      window.scrollTo({
+        top: elementPosition - navHeight,
+        behavior: 'smooth'
+      })
+    }
+  }
+
   return (
-    <section id="cover" className="w-full flex justify-center py-4 px-2 sm:px-4 lg:py-6">
-      <div className="slide-1080 bg-black text-white p-8 sm:p-12 md:p-16 lg:p-20 flex flex-col justify-between border border-neutral-800 rounded-sm">
-        {/* Top bar */}
-        <div className="flex items-center justify-between z-10">
-          <span className="text-base sm:text-lg md:text-xl font-black uppercase tracking-wider">{profile.initials}</span>
-          <button
-            onClick={onNext}
-            aria-label="Search"
-            className="grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-full border border-white/70 text-sm sm:text-base font-bold transition hover:bg-white hover:text-black hover:border-white"
+    <header className="sticky top-0 z-50 w-full bg-black/90 backdrop-blur-md border-b border-neutral-800 text-white">
+      <div className="section-container flex items-center justify-between h-16 sm:h-20">
+        {/* Brand */}
+        <a
+          href="#cover"
+          onClick={(e) => { e.preventDefault(); handleScroll('cover'); }}
+          className="flex items-center gap-3 group"
+        >
+          <div className="grid h-10 w-10 place-items-center rounded-full bg-white text-black text-xs font-black tracking-wider transition group-hover:bg-neutral-200">
+            {profile.initials}
+          </div>
+          <div className="hidden sm:block leading-tight">
+            <div className="text-sm font-black uppercase tracking-wider">{profile.name}</div>
+            <div className="text-[11px] text-neutral-400 font-semibold">{profile.role}</div>
+          </div>
+        </a>
+
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => handleScroll(item.id)}
+              className={`px-3 py-1.5 text-xs font-black uppercase tracking-wider transition rounded-full ${
+                active === item.id
+                  ? 'bg-white text-black'
+                  : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
+          <a
+            href={profile.github}
+            target="_blank"
+            rel="noreferrer"
+            className="hidden sm:flex items-center gap-1.5 border border-neutral-700 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider text-neutral-200 hover:bg-white hover:text-black hover:border-white transition"
           >
-            ⌕
+            GitHub
+          </a>
+          <a
+            href="#contact"
+            onClick={(e) => { e.preventDefault(); handleScroll('contact'); }}
+            className="bg-white text-black px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider hover:bg-neutral-200 transition"
+          >
+            Get In Touch
+          </a>
+
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+            className="md:hidden grid h-9 w-9 place-items-center rounded-full border border-neutral-700 text-white"
+          >
+            {menuOpen ? '✕' : '☰'}
           </button>
         </div>
+      </div>
 
-        {/* Center Title & Subtitle */}
-        <div className="my-auto text-center z-10 px-4 py-4 sm:py-6">
-          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-[85px] xl:text-[105px] font-black uppercase leading-[0.92] tracking-tight">
+      {/* Mobile dropdown */}
+      {menuOpen && (
+        <div className="md:hidden border-t border-neutral-800 bg-neutral-950 px-6 py-4 space-y-2">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => handleScroll(item.id)}
+              className={`block w-full text-left py-2 text-sm font-black uppercase tracking-wider ${
+                active === item.id ? 'text-white' : 'text-neutral-400'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+          <div className="pt-2 border-t border-neutral-800 flex gap-4">
+            <a href={profile.github} target="_blank" rel="noreferrer" className="text-xs font-bold uppercase underline text-neutral-300">
+              GitHub
+            </a>
+            <a href={profile.linkedin} target="_blank" rel="noreferrer" className="text-xs font-bold uppercase underline text-neutral-300">
+              LinkedIn
+            </a>
+          </div>
+        </div>
+      )}
+    </header>
+  )
+}
+
+/* 2. COVER / HERO SECTION */
+function CoverSection({ onNext }) {
+  return (
+    <section id="cover" className="w-full bg-black text-white py-16 sm:py-24 lg:py-32 border-b border-neutral-800">
+      <div className="section-container flex flex-col justify-between min-h-[60vh]">
+        {/* Top Tag */}
+        <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-neutral-400 pb-4 border-b border-neutral-800">
+          <span>PORTFOLIO — {profile.year}</span>
+          <span>CH-0001</span>
+        </div>
+
+        {/* Center Hero Heading */}
+        <div className="my-auto py-12 text-center">
+          <h1 className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-[100px] xl:text-[120px] font-black uppercase leading-[0.9] tracking-tight">
             <span>HELLO,</span>
             <br />
             <span>IT'S ME</span>
           </h1>
-          <p className="mx-auto mt-5 sm:mt-6 max-w-xl text-[10px] sm:text-xs md:text-sm font-medium uppercase leading-relaxed tracking-[0.18em] text-neutral-300">
-            A PERSONAL ARCHIVE OF INTERFACE DESIGN, DEVELOPMENT
-            <br className="hidden sm:inline" /> PRACTICE, AND SELECTED CASE STUDIES.
+          <p className="mx-auto mt-6 max-w-2xl text-xs sm:text-sm md:text-base font-medium uppercase leading-relaxed tracking-[0.18em] text-neutral-300">
+            A PERSONAL ARCHIVE OF INTERFACE DESIGN, DEVELOPMENT PRACTICE, AND SELECTED CASE STUDIES.
           </p>
+
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <button
+              onClick={onNext}
+              className="inline-flex items-center gap-2 bg-white text-black font-black text-xs sm:text-sm uppercase tracking-wider px-6 py-3 rounded-full hover:bg-neutral-200 transition"
+            >
+              Explore Portfolio <span>↓</span>
+            </button>
+            <a
+              href={`mailto:${profile.email}`}
+              className="inline-flex items-center gap-2 border border-neutral-700 text-white font-bold text-xs sm:text-sm uppercase tracking-wider px-6 py-3 rounded-full hover:bg-neutral-900 transition"
+            >
+              Direct Email
+            </a>
+          </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="flex items-end justify-between z-10 border-t border-neutral-800 pt-4 text-[10px] sm:text-xs md:text-sm font-extrabold uppercase tracking-wider">
-          <div className="leading-snug">
-            <div>{profile.name}</div>
+        {/* Bottom Hero Info */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between border-t border-neutral-800 pt-6 text-xs sm:text-sm font-extrabold uppercase tracking-wider gap-4">
+          <div>
+            <div className="text-white text-base">{profile.name}</div>
             <div className="text-neutral-400 font-semibold">{profile.role}</div>
           </div>
-          <div className="font-black tracking-widest text-xs sm:text-sm">
-            0001
+          <div className="text-neutral-500 font-semibold">
+            {profile.location}
           </div>
         </div>
       </div>
@@ -174,137 +287,75 @@ function CoverSlide({ onNext }) {
   )
 }
 
-/* Page 2 (0002) - Introduction 1920x1080 */
-function IntroSlide({ onNext }) {
+/* 3. INTRODUCTION SECTION */
+function IntroSection({ onNext }) {
   return (
-    <section id="introduction" className="w-full flex justify-center py-4 px-2 sm:px-4 lg:py-6">
-      <div className="slide-1080 bg-white text-black p-8 sm:p-12 md:p-16 lg:p-20 flex flex-col justify-between border border-neutral-300 rounded-sm">
-        {/* Top bar */}
-        <div className="flex items-center justify-between z-10">
-          <span className="text-base sm:text-lg md:text-xl font-black uppercase tracking-wider">{profile.initials}</span>
-          <span className="text-3xl sm:text-4xl md:text-5xl font-black">02</span>
-        </div>
+    <section id="introduction" className="w-full bg-white text-black py-16 sm:py-24 border-b border-neutral-200">
+      <div className="section-container">
+        <SectionHeader tag="Overview" title="Introduction" number="02" />
 
-        {/* Center Content */}
-        <div className="my-auto grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 md:gap-12 items-center py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 md:gap-12 items-center">
           <div>
-            <h2 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black uppercase leading-none">
-              Introduction
-            </h2>
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-[140px_1fr] md:grid-cols-[180px_1fr] gap-6 items-start">
-              <Photo src={photos.portrait} alt="Charnon portrait" className="aspect-square w-full rounded-sm shadow-sm" />
+            <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] md:grid-cols-[200px_1fr] gap-6 sm:gap-8 items-start">
+              <Photo src={photos.portrait} alt="Charnon portrait" className="aspect-square w-full rounded-sm shadow-md" />
               <div className="space-y-4">
-                <p className="text-sm sm:text-base md:text-lg leading-relaxed text-neutral-800 font-medium">
+                <p className="text-base sm:text-lg md:text-xl leading-relaxed text-neutral-800 font-medium">
                   {profile.bio}
                 </p>
-                <div className="pt-2">
+                <div className="pt-3">
                   <button
                     onClick={onNext}
                     className="inline-flex items-center gap-3 text-xs sm:text-sm font-black uppercase tracking-wider border-b-2 border-black pb-1 hover:opacity-70 transition"
                   >
-                    See More <span className="grid h-7 w-7 place-items-center rounded-full border border-black">↓</span>
+                    Read Profile & Experience <span className="grid h-6 w-6 place-items-center rounded-full border border-black text-[10px]">↓</span>
                   </button>
                 </div>
               </div>
             </div>
           </div>
-          <div className="hidden lg:block h-full max-h-[440px]">
-            <Photo src={photos.studio} alt="Code and development" className="h-full w-full object-cover rounded-sm shadow-md" />
+
+          <div className="h-full min-h-[280px] sm:min-h-[360px]">
+            <Photo src={photos.codeIntro} alt="Code and development" className="h-full w-full object-cover rounded-sm shadow-md min-h-[280px]" />
           </div>
         </div>
-
-        {/* Footer */}
-        <FrameFooter number="0002" />
       </div>
     </section>
   )
 }
 
-function Navbar({ active, setActive }) {
-  const tabs = ['Cover', 'Intro', 'About Me', 'Resume', 'Work', 'Contact']
-
-  const handleNav = (tab) => {
-    setActive(tab)
-    if (tab === 'Cover') {
-      document.getElementById('cover')?.scrollIntoView({ behavior: 'smooth' })
-    } else if (tab === 'Intro') {
-      document.getElementById('introduction')?.scrollIntoView({ behavior: 'smooth' })
-    } else {
-      document.getElementById('content')?.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
-
+/* 4. ABOUT ME SECTION */
+function AboutSection() {
   return (
-    <nav id="content" className="sticky top-0 z-40 mx-auto w-full max-w-[1920px] px-2 sm:px-4">
-      <div className="flex items-center justify-between border-y border-black bg-white/95 backdrop-blur-md px-4 py-3 sm:px-8 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-black text-xs font-black text-white">
-            {profile.initials}
-          </div>
-          <div className="flex gap-4 sm:gap-6 overflow-x-auto text-xs sm:text-sm font-black uppercase tracking-wider">
-            {tabs.map((tab) => (
-              <button
-                key={tab}
-                className={`whitespace-nowrap border-b-2 pb-1 transition ${active === tab ? 'border-black text-black' : 'border-transparent text-neutral-400 hover:text-neutral-700'}`}
-                onClick={() => handleNav(tab)}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <IconButton label="Profile" href="#about">●</IconButton>
-          <IconButton label="Resume" href="#resume">↓</IconButton>
-          <IconButton label="Contact" href="#contact">✎</IconButton>
-        </div>
-      </div>
-    </nav>
-  )
-}
+    <section id="about" className="w-full bg-[#f6f6f4] text-black py-16 sm:py-24 border-b border-neutral-200">
+      <div className="section-container">
+        <SectionHeader tag="Section / 01" title="About Me" number="03" />
 
-/* Page 3 (0003 & 0004) - About Me 1920x1080 */
-function AboutSlide() {
-  return (
-    <section id="about" className="w-full flex justify-center py-4 px-2 sm:px-4 lg:py-6">
-      <div className="slide-1080 bg-[#f5f5f3] text-black p-6 sm:p-10 md:p-14 lg:p-16 flex flex-col justify-between border border-neutral-300 rounded-sm">
-        {/* Top indicator */}
-        <div className="flex items-center justify-between pb-3 border-b border-black text-xs font-black uppercase tracking-wider">
-          <span>Section / 01</span>
-          <span>About Me Spreads</span>
-        </div>
-
-        {/* 2-Spread Columns in 16:9 page */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 my-auto py-4">
-          {/* Left Spread 0003 */}
-          <div className="bg-white p-6 sm:p-8 flex flex-col justify-between border border-neutral-200 shadow-sm rounded-sm">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column: Portrait & Personal Statement */}
+          <div className="bg-white p-6 sm:p-10 flex flex-col justify-between border border-neutral-300 shadow-sm rounded-sm">
             <div className="text-center max-w-md mx-auto">
-              <h2 className="font-display text-4xl sm:text-5xl md:text-6xl font-black uppercase leading-tight">
+              <h3 className="font-display text-3xl sm:text-4xl md:text-5xl font-black uppercase leading-tight">
                 Charnon<br />Pookajarn
-              </h2>
-              <Photo src={photos.portrait} alt="Charnon portrait" className="mx-auto mt-4 h-44 w-36 sm:h-56 sm:w-44 rounded-sm shadow-sm" />
-              <p className="mt-4 text-xs sm:text-sm leading-relaxed text-neutral-700 font-medium">
+              </h3>
+              <Photo src={photos.portrait} alt="Charnon portrait" className="mx-auto mt-6 h-48 w-40 sm:h-60 sm:w-48 rounded-sm shadow-sm" />
+              <p className="mt-6 text-sm leading-relaxed text-neutral-700 font-medium">
                 Hello, my name is {profile.name}. I am a junior software developer with full-stack training, a creative media background, and practical experience coordinating real-world business operations.
               </p>
             </div>
-            <div className="mt-6 border-t border-black pt-2 flex justify-between text-[10px] sm:text-xs font-bold uppercase">
+            <div className="mt-8 border-t border-black pt-3 flex justify-between text-[11px] font-bold uppercase">
               <span>Profile Overview</span>
               <span>0003</span>
             </div>
           </div>
 
-          {/* Right Spread 0004 */}
-          <div className="bg-white p-6 sm:p-8 flex flex-col justify-between border border-neutral-200 shadow-sm rounded-sm">
+          {/* Right Column: Profile Details & Digital Presence */}
+          <div className="bg-white p-6 sm:p-10 flex flex-col justify-between border border-neutral-300 shadow-sm rounded-sm">
             <div>
-              <div className="flex justify-between items-start">
-                <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-black uppercase leading-none">About Me</h2>
-                <span className="text-3xl font-black">04</span>
-              </div>
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-[120px_1fr] gap-4">
-                <Photo src={photos.desk} alt="Workspace" className="h-32 w-full hidden md:block rounded-sm" />
-                <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-6">
+                <Photo src={photos.desk} alt="Workspace" className="h-36 w-full hidden md:block rounded-sm" />
+                <div className="space-y-6">
                   <CollapsibleBlock title="Profile" defaultOpen={true}>
-                    <dl className="grid gap-2 text-xs sm:text-sm">
+                    <dl className="grid gap-2.5 text-xs sm:text-sm">
                       <div className="flex justify-between border-b border-neutral-200 pb-1.5"><dt className="font-bold uppercase">Full name</dt><dd>{profile.name}</dd></div>
                       <div className="flex justify-between border-b border-neutral-200 pb-1.5"><dt className="font-bold uppercase">Location</dt><dd>{profile.location}</dd></div>
                       <div className="flex justify-between border-b border-neutral-200 pb-1.5"><dt className="font-bold uppercase">Phone</dt><dd><a className="underline font-bold" href={`tel:${profile.phone.replaceAll('-', '')}`}>{profile.phone}</a></dd></div>
@@ -312,15 +363,22 @@ function AboutSlide() {
                       <div className="flex justify-between border-b border-neutral-200 pb-1.5 gap-2"><dt className="font-bold uppercase shrink-0">Language</dt><dd className="text-right">Thai native, English Working Proficiency (Reading/Technical Documentation)</dd></div>
                     </dl>
                   </CollapsibleBlock>
+
                   <CollapsibleBlock title="Digital Presence" defaultOpen={true}>
                     <div className="flex flex-wrap gap-2 pt-1">
                       {[
                         ['LinkedIn', profile.linkedin],
+                        ['GitHub', profile.github],
                         ['Email', `mailto:${profile.email}`],
                         ['Phone', `tel:${profile.phone.replaceAll('-', '')}`],
-                        ['GitHub', profile.github],
                       ].map(([item, href]) => (
-                        <a key={item} href={href} target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noreferrer' : undefined} className="rounded-full border border-black px-3 py-1 text-xs font-black uppercase transition hover:bg-black hover:text-white">
+                        <a
+                          key={item}
+                          href={href}
+                          target={href.startsWith('http') ? '_blank' : undefined}
+                          rel={href.startsWith('http') ? 'noreferrer' : undefined}
+                          className="rounded-full border border-black px-3.5 py-1 text-xs font-black uppercase transition hover:bg-black hover:text-white"
+                        >
                           {item}
                         </a>
                       ))}
@@ -329,46 +387,38 @@ function AboutSlide() {
                 </div>
               </div>
             </div>
-            <div className="mt-6 border-t border-black pt-2 flex justify-between text-[10px] sm:text-xs font-bold uppercase">
+            <div className="mt-8 border-t border-black pt-3 flex justify-between text-[11px] font-bold uppercase">
               <span>Personal Details</span>
               <span>0004</span>
             </div>
           </div>
         </div>
-
-        {/* Slide Footer */}
-        <FrameFooter number="SPREAD 02" />
       </div>
     </section>
   )
 }
 
-/* Page 4 (0005, 0006, 0007) - Resume 1920x1080 */
-function ResumeSlide() {
+/* 5. RESUME SECTION */
+function ResumeSection() {
   const hardSkills = ['JavaScript', 'React', 'Node.js', 'SQL', 'MongoDB', 'HTML', 'CSS', 'Tailwind', 'Git', 'REST API', 'Express', 'Full Stack']
   const softSkills = ['Problem-Solving', 'Analytical Thinking', 'Attention to Detail', 'Teamwork', 'Adaptability', 'Continuous Learning']
 
   return (
-    <section id="resume" className="w-full flex justify-center py-4 px-2 sm:px-4 lg:py-6">
-      <div className="slide-1080 bg-[#f5f5f3] text-black p-6 sm:p-10 md:p-14 lg:p-16 flex flex-col justify-between border border-neutral-300 rounded-sm">
-        {/* Top indicator */}
-        <div className="flex items-center justify-between pb-3 border-b border-black text-xs font-black uppercase tracking-wider">
-          <span>Section / 02</span>
-          <span>Resume & Credentials</span>
-        </div>
+    <section id="resume" className="w-full bg-[#f6f6f4] text-black py-16 sm:py-24 border-b border-neutral-200">
+      <div className="section-container">
+        <SectionHeader tag="Section / 02" title="Resume & Credentials" number="04" />
 
-        {/* 3 Columns */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 my-auto py-4">
-          {/* Experience 0005 */}
-          <div className="bg-white p-6 flex flex-col justify-between border border-neutral-200 shadow-sm rounded-sm">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Experience */}
+          <div className="bg-white p-6 sm:p-8 flex flex-col justify-between border border-neutral-300 shadow-sm rounded-sm">
             <div>
-              <div className="flex justify-between items-start">
-                <h2 className="font-display text-3xl sm:text-4xl font-black uppercase leading-none">Experience</h2>
-                <span className="text-3xl font-black">05</span>
+              <div className="flex justify-between items-start border-b border-black pb-3">
+                <h3 className="font-display text-2xl sm:text-3xl font-black uppercase leading-none">Experience</h3>
+                <span className="text-2xl font-black">05</span>
               </div>
-              <div className="mt-5 space-y-4">
+              <div className="mt-6 space-y-4">
                 {experiences.map(([date, title, place, detail]) => (
-                  <article key={title} className="border-t border-neutral-300 pt-2.5 text-xs">
+                  <article key={title} className="border-b border-neutral-200 pb-3 text-xs last:border-b-0">
                     <div className="flex justify-between font-black text-neutral-900">
                       <span>{title}</span>
                       <span className="text-neutral-500 font-bold">{date}</span>
@@ -379,35 +429,35 @@ function ResumeSlide() {
                 ))}
               </div>
             </div>
-            <div className="mt-4 border-t border-black pt-2 flex justify-between text-[10px] font-bold uppercase">
+            <div className="mt-6 border-t border-black pt-3 flex justify-between text-[11px] font-bold uppercase">
               <span>Work History</span>
               <span>0005</span>
             </div>
           </div>
 
-          {/* Skills 0006 */}
-          <div className="bg-white p-6 flex flex-col justify-between border border-neutral-200 shadow-sm rounded-sm">
+          {/* Skills */}
+          <div className="bg-white p-6 sm:p-8 flex flex-col justify-between border border-neutral-300 shadow-sm rounded-sm">
             <div>
-              <div className="flex justify-between items-start">
-                <h2 className="font-display text-3xl sm:text-4xl font-black uppercase leading-none">Skills</h2>
-                <span className="text-3xl font-black">06</span>
+              <div className="flex justify-between items-start border-b border-black pb-3">
+                <h3 className="font-display text-2xl sm:text-3xl font-black uppercase leading-none">Skills</h3>
+                <span className="text-2xl font-black">06</span>
               </div>
-              <div className="mt-5 space-y-4">
+              <div className="mt-6 space-y-6">
                 <div>
-                  <h3 className="text-xs font-black uppercase tracking-wider mb-2">Technical Skills</h3>
+                  <h4 className="text-xs font-black uppercase tracking-wider mb-2.5">Technical Skills</h4>
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
                     {hardSkills.map((skill) => (
-                      <div key={skill} className="grid place-items-center border border-black bg-neutral-50 py-1 px-1 text-[9px] font-black uppercase text-center">
+                      <div key={skill} className="grid place-items-center border border-black bg-neutral-50 py-1.5 px-1 text-[10px] font-black uppercase text-center">
                         {skill}
                       </div>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-xs font-black uppercase tracking-wider mb-2">Soft Skills</h3>
+                  <h4 className="text-xs font-black uppercase tracking-wider mb-2.5">Soft Skills</h4>
                   <div className="flex flex-wrap gap-1.5">
                     {softSkills.map((skill) => (
-                      <span key={skill} className="rounded-full border border-black px-2.5 py-1 text-[10px] font-bold uppercase">
+                      <span key={skill} className="rounded-full border border-black px-3 py-1 text-[11px] font-bold uppercase">
                         {skill}
                       </span>
                     ))}
@@ -415,22 +465,22 @@ function ResumeSlide() {
                 </div>
               </div>
             </div>
-            <div className="mt-4 border-t border-black pt-2 flex justify-between text-[10px] font-bold uppercase">
+            <div className="mt-6 border-t border-black pt-3 flex justify-between text-[11px] font-bold uppercase">
               <span>Core Competencies</span>
               <span>0006</span>
             </div>
           </div>
 
-          {/* Education 0007 */}
-          <div className="bg-white p-6 flex flex-col justify-between border border-neutral-200 shadow-sm rounded-sm">
+          {/* Education */}
+          <div className="bg-white p-6 sm:p-8 flex flex-col justify-between border border-neutral-300 shadow-sm rounded-sm">
             <div>
-              <div className="flex justify-between items-start">
-                <h2 className="font-display text-3xl sm:text-4xl font-black uppercase leading-none">Education</h2>
-                <span className="text-3xl font-black">07</span>
+              <div className="flex justify-between items-start border-b border-black pb-3">
+                <h3 className="font-display text-2xl sm:text-3xl font-black uppercase leading-none">Education</h3>
+                <span className="text-2xl font-black">07</span>
               </div>
-              <div className="mt-5 space-y-4">
+              <div className="mt-6 space-y-4">
                 {education.map(([date, title, place, detail]) => (
-                  <article key={title} className="border-t border-neutral-300 pt-2.5 text-xs">
+                  <article key={title} className="border-b border-neutral-200 pb-3 text-xs last:border-b-0">
                     <div className="flex justify-between font-black text-neutral-900">
                       <span>{title}</span>
                       <span className="text-neutral-500 font-bold">{date}</span>
@@ -440,61 +490,54 @@ function ResumeSlide() {
                   </article>
                 ))}
                 <div className="pt-2">
-                  <Photo src={photos.laptop} alt="Laptop setup" className="h-28 w-full rounded-sm" />
+                  <Photo src={photos.laptop} alt="Laptop setup" className="h-32 w-full rounded-sm" />
                 </div>
               </div>
             </div>
-            <div className="mt-4 border-t border-black pt-2 flex justify-between text-[10px] font-bold uppercase">
+            <div className="mt-6 border-t border-black pt-3 flex justify-between text-[11px] font-bold uppercase">
               <span>Academic & Bootcamp</span>
               <span>0007</span>
             </div>
           </div>
         </div>
-
-        {/* Slide Footer */}
-        <FrameFooter number="SPREAD 03" />
       </div>
     </section>
   )
 }
 
-/* Page 5 (0008-0011) - Work / Projects 1920x1080 */
-function WorkSlide() {
+/* 6. PROJECTS / WORK SECTION */
+function WorkSection() {
   return (
-    <section id="work" className="w-full flex justify-center py-4 px-2 sm:px-4 lg:py-6">
-      <div className="slide-1080 bg-[#f5f5f3] text-black p-6 sm:p-10 md:p-14 lg:p-16 flex flex-col justify-between border border-neutral-300 rounded-sm">
-        {/* Top indicator */}
-        <div className="flex items-center justify-between pb-3 border-b border-black text-xs font-black uppercase tracking-wider">
-          <span>Section / 03</span>
-          <span>Selected Projects</span>
-        </div>
+    <section id="work" className="w-full bg-[#f6f6f4] text-black py-16 sm:py-24 border-b border-neutral-200">
+      <div className="section-container">
+        <SectionHeader tag="Section / 03" title="Selected Projects" number="05" />
 
-        {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-auto py-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {projects.map((project, index) => (
-            <article key={project.title} className="bg-white p-6 flex flex-col justify-between border border-neutral-200 shadow-sm rounded-sm">
+            <article key={project.title} className="bg-white p-6 sm:p-8 flex flex-col justify-between border border-neutral-300 shadow-sm rounded-sm hover:shadow-md transition">
               <div>
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start border-b border-black pb-3">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-wider text-neutral-500">{project.label}</span>
                     <h3 className="font-display text-2xl sm:text-3xl font-black uppercase leading-tight mt-1">{project.title}</h3>
                   </div>
                   <span className="text-2xl font-black">{String(index + 8).padStart(2, '0')}</span>
                 </div>
-                <div className="mt-4">
-                  <Photo src={project.image} alt={project.title} className="h-36 sm:h-44 w-full rounded-sm" />
-                  <p className="mt-3 text-xs leading-relaxed text-neutral-700">{project.description}</p>
+                <div className="mt-5">
+                  <Photo src={project.image} alt={project.title} className="h-44 sm:h-48 w-full rounded-sm" />
+                  <p className="mt-4 text-xs sm:text-sm leading-relaxed text-neutral-700">{project.description}</p>
                 </div>
               </div>
-              <div className="mt-4 pt-3 border-t border-black space-y-2 text-[10px] font-bold uppercase">
+
+              <div className="mt-6 pt-4 border-t border-black space-y-3 text-[11px] font-bold uppercase">
                 <div className="flex flex-wrap gap-1.5">
                   {project.tech.map((t) => (
-                    <span key={t} className="border border-black px-1.5 py-0.5 text-[9px]">{t}</span>
+                    <span key={t} className="border border-black px-2 py-0.5 text-[10px]">{t}</span>
                   ))}
                 </div>
-                <div className="flex justify-between items-center pt-1">
-                  <span className="text-neutral-500">{project.people}</span>
-                  <div className="flex gap-2.5">
+                <div className="flex justify-between items-center pt-2">
+                  <span className="text-neutral-500 text-[10px]">{project.people}</span>
+                  <div className="flex gap-3">
                     <a className="underline font-black hover:text-neutral-600" href={project.github} target="_blank" rel="noreferrer">GitHub</a>
                     <a className="underline font-black hover:text-neutral-600" href={project.demo} target="_blank" rel="noreferrer">Demo</a>
                   </div>
@@ -503,51 +546,46 @@ function WorkSlide() {
             </article>
           ))}
         </div>
-
-        {/* Slide Footer */}
-        <FrameFooter number="SPREAD 04" />
       </div>
     </section>
   )
 }
 
-/* Page 6 (0012, 0013) - Contact & Thanks 1920x1080 */
-function ContactSlide() {
+/* 7. CONTACT / FOOTER SECTION */
+function ContactSection() {
   return (
-    <footer id="contact" className="w-full flex justify-center py-4 px-2 sm:px-4 lg:py-6">
-      <div className="slide-1080 bg-black text-white p-8 sm:p-12 md:p-16 lg:p-20 flex flex-col justify-between border border-neutral-800 rounded-sm">
-        {/* Top bar */}
-        <div className="flex items-center justify-between z-10 border-b border-neutral-800 pb-4">
+    <footer id="contact" className="w-full bg-black text-white py-16 sm:py-24">
+      <div className="section-container">
+        <div className="flex items-center justify-between border-b border-neutral-800 pb-4 mb-12">
           <span className="text-base sm:text-lg md:text-xl font-black uppercase tracking-wider">{profile.initials}</span>
           <span className="text-xs font-bold uppercase tracking-widest text-neutral-400">Get In Touch</span>
         </div>
 
-        {/* Center Thanks & Contact */}
-        <div className="my-auto grid grid-cols-1 lg:grid-cols-2 gap-10 items-center py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center py-6">
           <div className="border-b lg:border-b-0 lg:border-r border-neutral-800 pb-8 lg:pb-0 lg:pr-8">
-            <Photo src={photos.portrait} alt="Small portrait" className="h-24 w-24 rounded-full mb-6 border-2 border-white/20" />
+            <Photo src={photos.portrait} alt="Small portrait" className="h-28 w-28 rounded-full mb-6 border-2 border-white/20" />
             <h2 className="font-display text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black uppercase leading-none">
               Thanks.
             </h2>
-            <p className="mt-4 text-xs sm:text-sm md:text-base uppercase tracking-wider text-neutral-400 max-w-md">
+            <p className="mt-4 text-sm sm:text-base uppercase tracking-wider text-neutral-400 max-w-md">
               Thank you for exploring my portfolio. Open to opportunities, collaborations, and software engineering roles.
             </p>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div>
-              <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-neutral-400">Direct Contact</p>
+              <p className="text-xs font-black uppercase tracking-widest text-neutral-400">Direct Contact</p>
               <a href={`mailto:${profile.email}`} className="mt-2 block text-2xl sm:text-4xl md:text-5xl font-black underline hover:text-neutral-300 transition break-all">
                 {profile.email}
               </a>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm uppercase font-bold text-neutral-300 pt-4 border-t border-neutral-800">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs sm:text-sm uppercase font-bold text-neutral-300 pt-6 border-t border-neutral-800">
               <div>
-                <p>{profile.location}</p>
-                <p className="mt-1">Tel: <a className="underline" href={`tel:${profile.phone.replaceAll('-', '')}`}>{profile.phone}</a></p>
+                <p className="text-white">{profile.location}</p>
+                <p className="mt-1">Tel: <a className="underline hover:text-white" href={`tel:${profile.phone.replaceAll('-', '')}`}>{profile.phone}</a></p>
               </div>
-              <div className="flex sm:flex-col sm:items-end gap-3 sm:gap-2">
+              <div className="flex sm:flex-col sm:items-end gap-4 sm:gap-2">
                 <a href={profile.linkedin} target="_blank" rel="noreferrer" className="underline hover:text-white">LinkedIn</a>
                 <a href={profile.github} target="_blank" rel="noreferrer" className="underline hover:text-white">GitHub</a>
               </div>
@@ -555,10 +593,9 @@ function ContactSlide() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="flex items-end justify-between z-10 border-t border-neutral-800 pt-4 text-[10px] sm:text-xs md:text-sm font-extrabold uppercase tracking-wider">
+        <div className="flex flex-col sm:flex-row items-center justify-between border-t border-neutral-800 pt-8 mt-12 text-xs font-extrabold uppercase tracking-wider text-neutral-400 gap-2">
           <div>Copyright {profile.year} — {profile.name}</div>
-          <div className="font-black tracking-widest text-xs sm:text-sm">0013</div>
+          <div className="font-black tracking-widest text-neutral-500">0013</div>
         </div>
       </div>
     </footer>
@@ -566,26 +603,55 @@ function ContactSlide() {
 }
 
 function App() {
-  const [active, setActive] = useState('Cover')
+  const [active, setActive] = useState('cover')
 
-  const scrollToNext = () => {
-    document.getElementById('introduction')?.scrollIntoView({ behavior: 'smooth' })
-  }
+  useEffect(() => {
+    const handleScrollObserver = () => {
+      const sections = ['cover', 'introduction', 'about', 'resume', 'work', 'contact']
+      const scrollPosition = window.scrollY + 200
 
-  const scrollToAbout = () => {
-    document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })
+      for (const section of sections) {
+        const el = document.getElementById(section)
+        if (el) {
+          const top = el.offsetTop
+          const height = el.offsetHeight
+          if (scrollPosition >= top && scrollPosition < top + height) {
+            setActive(section)
+            break
+          }
+        }
+      }
+    }
+
+    window.addEventListener('scroll', handleScrollObserver, { passive: true })
+    return () => window.removeEventListener('scroll', handleScrollObserver)
+  }, [])
+
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id)
+    if (el) {
+      const navHeight = 70
+      const pos = el.getBoundingClientRect().top + window.pageYOffset
+      window.scrollTo({ top: pos - navHeight, behavior: 'smooth' })
+    }
   }
 
   return (
-    <div className="min-h-screen bg-[#111111] text-[#050505] flex flex-col items-center">
-      {/* 1920x1080 Slide Pages */}
-      <CoverSlide onNext={scrollToNext} />
-      <IntroSlide onNext={scrollToAbout} />
+    <div className="min-h-screen bg-[#0e0e0e] text-[#111111] flex flex-col">
+      {/* 1. TOP STICKY NAVBAR */}
       <Navbar active={active} setActive={setActive} />
-      <AboutSlide />
-      <ResumeSlide />
-      <WorkSlide />
-      <ContactSlide />
+
+      {/* 2. RESPONSIVE SECTIONS */}
+      <main className="flex-1">
+        <CoverSection onNext={() => scrollToSection('introduction')} />
+        <IntroSection onNext={() => scrollToSection('about')} />
+        <AboutSection />
+        <ResumeSection />
+        <WorkSection />
+      </main>
+
+      {/* 3. FOOTER / CONTACT */}
+      <ContactSection />
     </div>
   )
 }
